@@ -15,7 +15,7 @@ def get_aircraft_data(lat, lon, radius):
     Returns:
         list: A list of aircraft data, including position and other metadata.
     """
-    api = OpenSkyApi()
+    api = OpenSkyApi(username="reebr", password='M;B.D;$v#f8%"=%')
 
     try:
         # Get states from the API
