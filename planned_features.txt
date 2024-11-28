@@ -1,0 +1,5 @@
+Allow for user to move in the scene
+Create different radii settings to zoom out
+Show altitude differences
+Heading at the top of the screen
+Taken path as a line following behind the user
