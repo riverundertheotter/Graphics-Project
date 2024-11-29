@@ -46,7 +46,11 @@ def get_aircraft_data(lat, lon, radius):
                             "origin_country": aircraft.origin_country,
                             "latitude": aircraft.latitude,
                             "longitude": aircraft.longitude,
-                            "altitude": aircraft.baro_altitude,
+                            "altitude": (
+                                aircraft.baro_altitude
+                                if aircraft.baro_altitude is not None
+                                else 0
+                            ),
                             "velocity": aircraft.velocity,
                             "true_track": aircraft.true_track,  # Correct attribute name
                             "vertical_rate": aircraft.vertical_rate,

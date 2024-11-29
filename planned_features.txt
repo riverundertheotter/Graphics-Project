@@ -1,6 +1,6 @@
 Allow for user to move in the scene
 Create different radii settings to zoom out
-Show altitude differences
+Show altitude differences ------------------------- DONE
 Heading at the top of the screen
 Taken path as a line following behind the user
 (STRETCH) Allow for the user to request path to another airport. Look up coordinates and create a path
