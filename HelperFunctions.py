@@ -10,10 +10,6 @@ YELLOW = (255, 230, 0)
 # threat
 RED = (255, 0, 0)
 
-# Initialize offsets for scene movement
-offset_x = 0
-offset_y = 0
-
 
 def draw_circle(
     num,
@@ -39,19 +35,29 @@ def draw_circle(
         )
 
 
-def update_scene_position(heading, speed, lat, lon):
-    global offset_x, offset_y
+def update_scene_position(heading, speed, lat, lon, dt=1 / 60):
+    """
+    Update the scene position and offsets based on heading, speed, and current position.
 
+    :param heading: The heading in degrees (0 = north, 90 = east, etc.)
+    :param speed: The speed in km/h
+    :param lat: Current latitude in degrees
+    :param lon: Current longitude in degrees
+    :param offset_x: Current x offset in screen coordinates
+    :param offset_y: Current y offset in screen coordinates
+    :param dt: Time delta per frame in seconds (default assumes 60 FPS)
+    :return: Updated latitude, longitude, offset_x, and offset_y
+    """
     # Calculate movement based on speed and heading
     if speed > 0:
-        speed_km_per_frame = speed / 3600 / 60
+        speed_km_per_second = speed / 3600  # Convert speed to km/s
+        distance = speed_km_per_second * dt  # Distance traveled in this frame
         heading_radians = math.radians(heading)
 
-        delta_lat = speed_km_per_frame / 111 * math.cos(heading_radians)
+        # Calculate changes in latitude and longitude
+        delta_lat = distance / 111 * math.cos(heading_radians)  # 1 degree lat = ~111 km
         delta_lon = (
-            speed_km_per_frame
-            / (111 * math.cos(math.radians(lat)))
-            * math.sin(heading_radians)
+            distance / (111 * math.cos(math.radians(lat))) * math.sin(heading_radians)
         )
 
         # Update coordinates with bounds checking
@@ -67,10 +73,6 @@ def update_scene_position(heading, speed, lat, lon):
             lon = new_lon
         else:
             print(f"Longitude out of bounds: {new_lon}")
-
-        # Update offsets based on movement
-        offset_x += delta_lon
-        offset_y += delta_lat
 
     return lat, lon
 
