@@ -134,6 +134,7 @@ def main():
             ascent_rate,
             flight_ceiling,
             descent_rate,
+            RADIUS_KM,
         )
 
         screen.fill(BLACK)
