@@ -8,23 +8,12 @@ from OpenSkyHandler import get_aircraft_data
 from HeadingIndicator import draw_heading_arc
 from DisplayText import display_altitude, display_speed
 import HelperFunctions
-from InputHandler import handle_input
-
-RADIUS_KM = 50
-LAT_SPAN = RADIUS_KM / 111
+from InputHandler import handle_input, zoom_input
 
 CYAN = (0, 255, 255)
 GREEN = (0, 255, 0)
 YELLOW = (255, 230, 0)
 RED = (255, 0, 0)
-
-
-def fetch_aircraft_data(lat, lon, radius, data_queue):
-    """Background thread to fetch aircraft data periodically."""
-    while True:
-        aircraft_data = get_aircraft_data(lat, lon, radius)
-        data_queue.put(aircraft_data)
-        time.sleep(2)  # Fetch data every 2 seconds
 
 
 def draw_aircraft(
@@ -50,9 +39,7 @@ def draw_aircraft(
         normalized_y = (aircraft["latitude"] - lat) / LAT_SPAN
 
         screen_x = SCREEN_WIDTH // 2 + int(normalized_x * (SCREEN_WIDTH // 2))
-        screen_y = (
-            SCREEN_HEIGHT + 130 // 2 - int(normalized_y * (SCREEN_HEIGHT + 130 // 2))
-        )
+        screen_y = SCREEN_HEIGHT // 2 + 130 - int(normalized_y * (SCREEN_HEIGHT // 2))
 
         rotated_pos = HelperFunctions.rotate_point(
             (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 130),
@@ -65,6 +52,19 @@ def draw_aircraft(
 
 
 def main():
+    RADIUS_KM = 50
+    LAT_SPAN = RADIUS_KM / 111
+
+    def get_radius():
+        return RADIUS_KM
+
+    def fetch_aircraft_data(lat, lon, radius, data_queue):
+        """Background thread to fetch aircraft data periodically."""
+        while True:
+            aircraft_data = get_aircraft_data(lat, lon, radius)
+            data_queue.put(aircraft_data)
+            time.sleep(2)  # fetch data every 2 seconds
+
     # pygame setup
     pygame.init()
 
@@ -75,6 +75,7 @@ def main():
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
     YELLOW = (255, 255, 0)
+
     # position
     lat = 32.8968
     lon = -97.0377
@@ -98,20 +99,22 @@ def main():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Navigation Display")
 
-    # Shared queue to hold aircraft data
+    # shared queue to hold aircraft data
     data_queue = Queue()
     aircraft_data = []
 
-    # Start background thread for fetching data
+    # start background thread for fetching data
     threading.Thread(
-        target=fetch_aircraft_data, args=(lat, lon, RADIUS_KM, data_queue), daemon=True
+        target=fetch_aircraft_data,
+        args=(lat, lon, get_radius(), data_queue),
+        daemon=True,
     ).start()
 
     while running:
         lat, lon = HelperFunctions.update_scene_position(heading, speed, lat, lon)
         LON_SPAN = LAT_SPAN * math.cos(math.radians(lat))
 
-        # Get updated aircraft data from the queue
+        # get updated aircraft data from the queue
         while not data_queue.empty():
             aircraft_data = data_queue.get()
 
@@ -119,9 +122,12 @@ def main():
         if len(trail) > trail_max_length:
             trail.pop(0)
 
+        # zoom in/out functionality
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+        RADIUS_KM, LAT_SPAN, LON_SPAN = zoom_input(RADIUS_KM, lat, LAT_SPAN, LON_SPAN)
 
         # get user input and update plane accordingly
         speed, current_altitude, heading = handle_input(
@@ -134,7 +140,6 @@ def main():
             ascent_rate,
             flight_ceiling,
             descent_rate,
-            RADIUS_KM,
         )
 
         screen.fill(BLACK)
@@ -157,31 +162,34 @@ def main():
             width=2,
         )
 
-        # Calculate rotated trail points
+        # calculate rotated trail points
         rotated_trail = []
         for point in trail:
-            # Calculate the offset from the center of the screen (the bottom of the triangle)
-            # The anchor point of the triangle is at (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 130)
-            normalized_x = (point[1] - lon) / LON_SPAN * (SCREEN_WIDTH // 2)
-            normalized_y = (point[0] - lat) / LAT_SPAN * (SCREEN_HEIGHT // 2)
+            # calculate the offset from the center of the screen (the bottom of the triangle)
+            # the anchor point of the triangle is at (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 130)
+            normalized_x = (point[1] - lon) / LON_SPAN
+            normalized_y = (point[0] - lat) / LAT_SPAN
 
-            # Calculate the rotated position of the trail points (relative to the bottom of the triangle)
+            screen_x = SCREEN_WIDTH // 2 + int(normalized_x * SCREEN_WIDTH // 2)
+            screen_y = SCREEN_HEIGHT // 2 + 130 - int(normalized_y * SCREEN_HEIGHT // 2)
+
+            # calculate the rotated position of the trail points (relative to the bottom of the triangle)
             rotated_point = HelperFunctions.rotate_point(
                 (
                     SCREEN_WIDTH // 2,
                     SCREEN_HEIGHT // 2 + 130,
-                ),  # Bottom of the triangle anchor point
+                ),  # bottom of the triangle anchor point
                 (
-                    SCREEN_WIDTH // 2 + int(normalized_x),
-                    SCREEN_HEIGHT // 2 + 130 - int(normalized_y),
+                    screen_x,
+                    screen_y,
                 ),
-                math.radians(-heading),  # Rotate based on the aircraft's heading
+                math.radians(-heading),  # rotate based on the aircraft's heading
             )
 
-            # Append the rotated point to the trail list
+            # append the rotated point to the trail list
             rotated_trail.append(rotated_point)
 
-        # Draw the trail
+        # draw the trail
         if len(rotated_trail) > 1:
             pygame.draw.lines(screen, YELLOW, False, rotated_trail, 2)
 
@@ -196,8 +204,9 @@ def main():
             LAT_SPAN,
             aircraft_data,
         )
-        display_speed(SCREEN_WIDTH, SCREEN_HEIGHT, screen, speed, font)
-        display_altitude(SCREEN_WIDTH, SCREEN_HEIGHT, screen, current_altitude, font)
+
+        display_speed(screen, speed, font)
+        display_altitude(screen, current_altitude, font)
 
         pygame.display.flip()
         clock.tick(30)

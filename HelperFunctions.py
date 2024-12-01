@@ -48,19 +48,19 @@ def update_scene_position(heading, speed, lat, lon, dt=1 / 60):
     :param dt: Time delta per frame in seconds (default assumes 60 FPS)
     :return: Updated latitude, longitude, offset_x, and offset_y
     """
-    # Calculate movement based on speed and heading
+    # calculate movement based on speed and heading
     if speed > 0:
-        speed_km_per_second = speed / 3600  # Convert speed to km/s
-        distance = speed_km_per_second * dt  # Distance traveled in this frame
+        speed_km_per_second = speed / 3600  # convert speed to km/s
+        distance = speed_km_per_second * dt  # distance traveled in this frame
         heading_radians = math.radians(heading)
 
-        # Calculate changes in latitude and longitude
+        # calculate changes in latitude and longitude
         delta_lat = distance / 111 * math.cos(heading_radians)  # 1 degree lat = ~111 km
         delta_lon = (
             distance / (111 * math.cos(math.radians(lat))) * math.sin(heading_radians)
         )
 
-        # Update coordinates with bounds checking
+        # update coordinates with bounds checking
         new_lat = lat + delta_lat
         new_lon = lon + delta_lon
 
@@ -100,13 +100,13 @@ def rotate_point(center, point, angle):
     cx, cy = center
     px, py = point
     s, c = math.sin(angle), math.cos(angle)
-    # Translate point to origin
+    # translate point to origin
     px -= cx
     py -= cy
-    # Rotate point
+    # rotate point
     x_new = px * c - py * s
     y_new = px * s + py * c
-    # Translate point back
+    # translate point back
     x_new += cx
     y_new += cy
     return (int(x_new), int(y_new))

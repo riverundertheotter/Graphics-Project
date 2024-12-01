@@ -1,4 +1,20 @@
 import pygame
+import math
+
+
+def zoom_input(radius, lat, lat_span, lon_span):
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_z]:
+        radius = min(radius + 10, 100)
+        lat_span = radius / 111
+        lon_span = lat_span * math.cos(math.radians(lat))
+    elif keys[pygame.K_x]:
+        radius = max(radius - 10, 1)
+        lat_span = radius / 111
+        lon_span = lat_span * math.cos(math.radians(lat))
+
+    return radius, lat_span, lon_span
 
 
 def handle_input(
@@ -11,8 +27,10 @@ def handle_input(
     ascent_rate,
     flight_ceiling,
     descent_rate,
-    radius,
 ):
+    """
+    Registers user data and changes airplane attributes accordingly
+    """
     keys = pygame.key.get_pressed()
     if keys[pygame.K_d]:
         heading = (heading + 1) % 360
@@ -29,9 +47,4 @@ def handle_input(
     elif keys[pygame.K_LCTRL]:
         altitude = max(altitude - descent_rate, 0)
 
-    # if keys[pygame.K_z]:
-    #     radius = max(radius - 5, 5)
-    # elif keys[pygame.K_x]:
-    #     radius = min(radius + 5, 100)
-
-    return speed, altitude, heading  # , radius
+    return speed, altitude, heading

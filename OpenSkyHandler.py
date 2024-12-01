@@ -1,6 +1,5 @@
 from opensky_api import OpenSkyApi
 from geopy.distance import geodesic
-import json
 
 
 def get_aircraft_data(lat, lon, radius):
@@ -18,7 +17,7 @@ def get_aircraft_data(lat, lon, radius):
     api = OpenSkyApi(username="reebr", password='M;B.D;$v#f8%"=%')
 
     try:
-        # Get states from the API
+        # get states from the API
         states = api.get_states()
 
         if not states or not states.states:
@@ -27,10 +26,10 @@ def get_aircraft_data(lat, lon, radius):
 
         aircraft_data = []
 
-        # Filter aircraft based on the given radius
+        # filter aircraft based on the given radius
         for aircraft in states.states:
             if aircraft.latitude is not None and aircraft.longitude is not None:
-                # Calculate distance using geopy
+                # calculate distance using geopy
                 distance = geodesic(
                     (lat, lon), (aircraft.latitude, aircraft.longitude)
                 ).km
