@@ -6,12 +6,12 @@ import time
 from queue import Queue
 from OpenSkyHandler import get_aircraft_data
 from HeadingIndicator import draw_heading_arc
-from DisplaySpeed import display_speed
+from DisplayText import display_altitude, display_speed
 import HelperFunctions
+from InputHandler import handle_input
 
 RADIUS_KM = 50
 LAT_SPAN = RADIUS_KM / 111
-current_altitude = 0
 
 CYAN = (0, 255, 255)
 GREEN = (0, 255, 0)
@@ -28,7 +28,15 @@ def fetch_aircraft_data(lat, lon, radius, data_queue):
 
 
 def draw_aircraft(
-    lat, lon, heading, screen, SCREEN_WIDTH, SCREEN_HEIGHT, LAT_SPAN, aircraft_data
+    lat,
+    lon,
+    heading,
+    current_altitude,
+    screen,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    LAT_SPAN,
+    aircraft_data,
 ):
     """Draw aircraft on the screen based on data."""
     if not aircraft_data:
@@ -57,24 +65,31 @@ def draw_aircraft(
 
 
 def main():
+    # pygame setup
     pygame.init()
 
     font = pygame.font.SysFont("Consolas", 20)
     SCREEN_WIDTH = 1280
     SCREEN_HEIGHT = 720
-
+    # display colors
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
     YELLOW = (255, 255, 0)
-
+    # position
     lat = 32.8968
     lon = -97.0377
     clock = pygame.time.Clock()
     heading = 0
+    # aircraft properties
+    current_altitude = 0
     speed = 100
-    acceleration = 5.0
+    acceleration = 0.5
     max_speed = 900
-    deceleration = 0.7
+    deceleration = 0.2
+    ascent_rate = 0.5
+    descent_rate = 0.8
+    flight_ceiling = 32000
+
     running = True
 
     trail = []
@@ -108,20 +123,21 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_d]:
-            heading = (heading + 1) % 360
-        elif keys[pygame.K_a]:
-            heading = (heading - 1) % 360
-
-        if keys[pygame.K_w]:
-            speed = min(speed + acceleration, max_speed)
-        elif keys[pygame.K_s]:
-            speed = max(speed - deceleration, 0)
+        # get user input and update plane accordingly
+        speed, current_altitude, heading = handle_input(
+            acceleration,
+            max_speed,
+            speed,
+            current_altitude,
+            heading,
+            deceleration,
+            ascent_rate,
+            flight_ceiling,
+            descent_rate,
+        )
 
         screen.fill(BLACK)
 
-        display_speed(SCREEN_WIDTH, SCREEN_HEIGHT, screen, speed, font)
         draw_heading_arc(screen, heading, SCREEN_WIDTH, font)
 
         HelperFunctions.draw_circle(
@@ -172,12 +188,15 @@ def main():
             lat,
             lon,
             heading,
+            current_altitude,
             screen,
             SCREEN_WIDTH,
             SCREEN_HEIGHT,
             LAT_SPAN,
             aircraft_data,
         )
+        display_speed(SCREEN_WIDTH, SCREEN_HEIGHT, screen, speed, font)
+        display_altitude(SCREEN_WIDTH, SCREEN_HEIGHT, screen, current_altitude, font)
 
         pygame.display.flip()
         clock.tick(30)
