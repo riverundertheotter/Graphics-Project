@@ -10,9 +10,13 @@ from DisplayText import display_altitude, display_speed
 import HelperFunctions
 from InputHandler import handle_input, zoom_input
 
+# no threat
 CYAN = (0, 255, 255)
+# minimal threat
 GREEN = (0, 255, 0)
+# potential threat
 YELLOW = (255, 230, 0)
+# immediate threat
 RED = (255, 0, 0)
 
 
@@ -165,7 +169,6 @@ def main():
         # calculate rotated trail points
         rotated_trail = []
         for point in trail:
-            # calculate the offset from the center of the screen (the bottom of the triangle)
             # the anchor point of the triangle is at (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 130)
             normalized_x = (point[1] - lon) / LON_SPAN
             normalized_y = (point[0] - lat) / LAT_SPAN

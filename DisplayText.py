@@ -8,6 +8,6 @@ def display_speed(surface, speed, font):
 
 
 def display_altitude(surface, altitude, font):
-    label = font.render(f"{int(altitude)}ft", True, WHITE)
+    label = font.render(f"{int(altitude)}m", True, WHITE)
     # position the label at the top-left corner
     surface.blit(label, (10, 10))
