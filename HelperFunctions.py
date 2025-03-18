@@ -39,14 +39,14 @@ def update_scene_position(heading, speed, lat, lon, dt=1 / 60):
     """
     Update the scene position and offsets based on heading, speed, and current position.
 
-    :param heading: The heading in degrees (0 = north, 90 = east, etc.)
-    :param speed: The speed in km/h
-    :param lat: Current latitude in degrees
-    :param lon: Current longitude in degrees
-    :param offset_x: Current x offset in screen coordinates
-    :param offset_y: Current y offset in screen coordinates
-    :param dt: Time delta per frame in seconds (default assumes 60 FPS)
-    :return: Updated latitude, longitude, offset_x, and offset_y
+    heading: The heading in degrees (0 = north, 90 = east, etc.)
+    speed: The speed in km/h
+    lat: Current latitude in degrees
+    lon: Current longitude in degrees
+    offset_x: Current x offset in screen coordinates
+    offset_y: Current y offset in screen coordinates
+    dt: Time delta per frame in seconds (default assumes 60 FPS)
+    return Updated latitude, longitude, offset_x, and offset_y
     """
     # calculate movement based on speed and heading
     if speed > 0:
@@ -92,9 +92,9 @@ def altitude_assignment(altitude_other, altitude_self):
 def rotate_point(center, point, angle):
     """
     Rotates a point around a given center by an angle (in radians).
-    :param center: Tuple (cx, cy) for the rotation center.
-    :param point: Tuple (px, py) for the point to rotate.
-    :param angle: Angle in radians.
+    center (tuple (cx, cy)):  for the rotation center.
+    point: (tuple (px, py)) for the point to rotate.
+    angle: Angle in radians.
     :return: Rotated point (new_x, new_y).
     """
     cx, cy = center

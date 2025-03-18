@@ -31,7 +31,20 @@ def draw_aircraft(
     LAT_SPAN,
     aircraft_data,
 ):
-    """Draw aircraft on the screen based on data."""
+    """
+    Draws aircraft onto screen, calculating relative position to the user.
+
+    Args:
+        lat (float): user's current latitude
+        lon (float): user's current longitude
+        heading (int): user's current heading
+        current_altitude (int)
+        screen: pygame screen
+        SCREEN_WIDTH (int)
+        SCREEN_HEIGHT (int)
+        LAT_SPAN (float): the translation of latitude into the size of the world space
+        aircraft_data (tuple): all aircraft recieved from the API call
+    """
     if not aircraft_data:
         return
 
@@ -39,12 +52,13 @@ def draw_aircraft(
 
     for aircraft in aircraft_data:
         altitude = int(aircraft["altitude"])
+        # normalize with the spans
         normalized_x = (aircraft["longitude"] - lon) / LON_SPAN
         normalized_y = (aircraft["latitude"] - lat) / LAT_SPAN
-
+        # put into screen space
         screen_x = SCREEN_WIDTH // 2 + int(normalized_x * (SCREEN_WIDTH // 2))
         screen_y = SCREEN_HEIGHT // 2 + 130 - int(normalized_y * (SCREEN_HEIGHT // 2))
-
+        # rotate according to heading
         rotated_pos = HelperFunctions.rotate_point(
             (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 130),
             (screen_x, screen_y),
